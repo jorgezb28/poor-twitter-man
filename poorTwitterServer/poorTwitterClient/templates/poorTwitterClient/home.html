@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+    integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+  <title>Poor's Twitter Man</title>
+</head>
+<body>
+  <h1>Poor's Twitter Man</h1>
+    <div id="app" class="card col-md-6">
+        <p style="color: green">[[success_msg]]</p>
+        <p style="color: red">[[err_msg]]</p>
+
+        <!-- form -->
+        <form class="form">
+          <div class="col-md-6">
+            <label for="user" class="col-md-5">User</label>
+            <input id="user" type="text" v-model="username" class="col-md-6" maxlength="15">
+          </div>
+          <div class="col-md-6">
+            <label for="tweet" class="col-md-5">Tweet Content</label>
+            <input id="tweet" type="text" v-model="tweet" class="col-md-6" maxlength="50">
+          </div>
+          <input v-on:click.prevent="submitForm" type="submit" value="Tweet" class="offset-md-3">
+        </form>
+        </br>
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th v-for="header in headers">
+                [[header]]
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="allTweets.length === 0">
+              <td>No tweets added</td>
+            </tr>
+            <tr v-else v-for="tweet in allTweets">
+              <td>[[tweet.user]]</td>
+              <td>[[tweet.tweet]]</td>
+              <td>[[tweet.tweetDate]]</td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+    <!-- vuejs and axios -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+
+const vms = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#app',
+        data: {
+          headers: [
+            "User", "Tweet", 'Date'
+          ],
+          allTweets: [],
+          username: null,
+          tweet: null,
+
+          success_msg: "",
+          err_msg: "",
+
+        },
+        methods: {
+          submitForm: function(){
+            this.success_msg = ""
+            this.err_msg = ""
+            axios({
+                method : "POST",
+                url:"{% url 'submitform' %}", //django path name
+                headers: {'X-CSRFTOKEN': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+                data : {"username":this.username, "tweet":this.tweet},//data
+              }).then(response => {
+                tweetDate = response.data['tweetDate'];
+                user = response.data['user'];
+                tweetContent = response.data['tweet'];
+                this.allTweets.push({"user":user, "tweet":tweetContent, "tweetDate":tweetDate});
+
+                this.username = null;
+                this.tweet = null;
+                this.success_msg = response.data['msg']+" at "+tweetDate;
+              }).catch(err => {
+                     this.err_msg = err.response.data['err'];
+              });
+          },
+        },
+    });
+</script>
+
+</body>
+</html>
