@@ -14,3 +14,5 @@ To run this project please follow this instructions:
 5. Run the following command `python3 manage.py runserver`
 6. Open your browser 
 7. Go to `home` page url http://127.0.0.1:8000/home (this can change, please see the url in the terminal)
+
+If you have an issue, don't hesitate to contact me: jorgezb28@gmail.com
